@@ -59,5 +59,10 @@ jobs:
               echo "ERROR: Docker Compose not found on VPS. Install docker-compose-plugin."
               exit 1
             fi
-            $COMPOSE_CMD up -d --build --remove-orphans
+            export COMPOSE_HTTP_TIMEOUT=300
+            $COMPOSE_CMD up -d --build --remove-orphans || {
+              echo "Retrying docker compose up..."
+              sleep 5
+              $COMPOSE_CMD up -d --build --remove-orphans
+            }
             docker image prune -f
