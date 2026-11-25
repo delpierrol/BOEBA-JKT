@@ -1,0 +1,29 @@
+{
+  "name": "SessionCapacity",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date for this session capacity"
+    },
+    "time_slot": {
+      "type": "string",
+      "description": "Time slot (e.g., 11:00 AM, 12:00 PM)"
+    },
+    "capacity": {
+      "type": "number",
+      "description": "Capacity for this specific session",
+      "default": 50
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes for this session"
+    }
+  },
+  "required": [
+    "date",
+    "time_slot",
+    "capacity"
+  ]
+}

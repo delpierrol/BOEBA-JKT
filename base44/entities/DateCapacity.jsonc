@@ -1,0 +1,28 @@
+{
+  "name": "DateCapacity",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date for capacity management"
+    },
+    "total_capacity": {
+      "type": "number",
+      "description": "Total booking capacity for the date",
+      "default": 50
+    },
+    "sunday_reserved_slots": {
+      "type": "number",
+      "description": "Override Sunday morning reserved slots for this specific date (08:00-11:00). If not set, uses global setting."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes for this date"
+    }
+  },
+  "required": [
+    "date",
+    "total_capacity"
+  ]
+}

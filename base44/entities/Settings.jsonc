@@ -1,0 +1,22 @@
+{
+  "name": "Settings",
+  "type": "object",
+  "properties": {
+    "setting_key": {
+      "type": "string",
+      "description": "Unique key for the setting (e.g., 'default_capacity', 'time_sessions')"
+    },
+    "setting_value": {
+      "type": "string",
+      "description": "Value of the setting (stored as JSON string for complex values)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of what this setting does"
+    }
+  },
+  "required": [
+    "setting_key",
+    "setting_value"
+  ]
+}

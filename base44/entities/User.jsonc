@@ -1,0 +1,16 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "staff_role": {
+      "type": "string",
+      "enum": [
+        "none",
+        "hostess"
+      ],
+      "default": "none",
+      "description": "Additional staff role for access control (hostess can access Check-In and QR Scanner)"
+    }
+  },
+  "required": []
+}

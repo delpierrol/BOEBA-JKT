@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  full_name     String?
+  password_hash String
+  role          String   @default("user") // "admin" | "user"
+  staff_role    String   @default("none") // "none" | "hostess"
+  created_date  DateTime @default(now())
+  updated_date  DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  booking_code    String   @unique
+  customer_name   String
+  customer_email  String?
+  whatsapp_number String
+  booking_date    String   // YYYY-MM-DD
+  time_slot       String
+  party_size      Int
+  status          String   @default("confirmed") // "confirmed" | "cancelled" | "completed"
+  reminder_sent   Boolean  @default(false)
+  notes           String?
+  created_date    DateTime @default(now())
+  updated_date    DateTime @updatedAt
+
+  @@index([booking_date, status])
+  @@index([booking_code])
+  @@map("bookings")
+}
+
+model DateCapacity {
+  id                    String   @id @default(cuid())
+  date                  String   @unique // YYYY-MM-DD
+  total_capacity        Int      @default(50)
+  sunday_reserved_slots Int?
+  notes                 String?
+  created_date          DateTime @default(now())
+  updated_date          DateTime @updatedAt
+
+  @@map("date_capacities")
+}
+
+model SessionCapacity {
+  id           String   @id @default(cuid())
+  date         String   // YYYY-MM-DD
+  time_slot    String
+  capacity     Int      @default(50)
+  notes        String?
+  created_date DateTime @default(now())
+  updated_date DateTime @updatedAt
+
+  @@unique([date, time_slot])
+  @@index([date])
+  @@map("session_capacities")
+}
+
+model Settings {
+  id            String   @id @default(cuid())
+  setting_key   String   @unique
+  setting_value String
+  description   String?
+  created_date  DateTime @default(now())
+  updated_date  DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model WaitingList {
+  id              String   @id @default(cuid())
+  customer_name   String
+  whatsapp_number String
+  booking_date    String   // YYYY-MM-DD
+  time_slot       String
+  party_size      Int
+  status          String   @default("waiting") // "waiting" | "contacted" | "booked" | "cancelled"
+  notes           String?
+  created_date    DateTime @default(now())
+  updated_date    DateTime @updatedAt
+
+  @@index([booking_date, status])
+  @@map("waiting_lists")
+}

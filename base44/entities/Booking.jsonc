@@ -1,0 +1,63 @@
+{
+  "name": "Booking",
+  "type": "object",
+  "properties": {
+    "booking_code": {
+      "type": "string",
+      "description": "Unique booking code"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "Name of the customer"
+    },
+    "customer_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Customer email for notifications (optional)"
+    },
+    "whatsapp_number": {
+      "type": "string",
+      "description": "WhatsApp number for notifications"
+    },
+    "booking_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the booking"
+    },
+    "time_slot": {
+      "type": "string",
+      "description": "Time slot for the booking"
+    },
+    "party_size": {
+      "type": "integer",
+      "description": "Number of guests"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "confirmed",
+        "cancelled",
+        "completed"
+      ],
+      "default": "confirmed",
+      "description": "Status of the booking"
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether reminder has been sent"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes for the booking"
+    }
+  },
+  "required": [
+    "booking_code",
+    "customer_name",
+    "whatsapp_number",
+    "booking_date",
+    "time_slot",
+    "party_size"
+  ]
+}
