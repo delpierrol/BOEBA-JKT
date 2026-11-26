@@ -554,7 +554,7 @@ export default function BookTable() {
 </head>
 <body>
   <div class="header">
-    <img src="/logo.png" alt="Boeba Restaurant">
+    <img src="${window.location.origin}/logo.png" alt="Boeba Restaurant">
     <h1>Booking Confirmed!</h1>
     <p style="margin: 10px 0 0 0;">Your table reservation at Boeba Restaurant</p>
   </div>
@@ -968,7 +968,7 @@ We look forward to serving you the finest dining experience!
               <div style={{ backgroundColor: '#fffffd' }} className="backdrop-blur-sm rounded-lg p-3 border-2 border-green-200/50 shadow-md">
                 <div className="flex items-center justify-center gap-3">
                   <img 
-                    src="https://maxsi.id/web/assets/label-logo-halal-baru-mui-2022.ByeZ8gwf_Z23l3M2.webp" 
+                    src="/halal-logo.svg" 
                     alt="Halal MUI" 
                     className="w-8 h-8 md:w-10 md:h-10 object-contain"
                   />

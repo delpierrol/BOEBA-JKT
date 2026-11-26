@@ -600,7 +600,7 @@ We look forward to serving you the finest dining experience!
               <div style={{ backgroundColor: '#fffffd' }} className="backdrop-blur-sm rounded-lg p-3 border-2 border-green-200/50 shadow-md">
                 <div className="flex items-center justify-center gap-3">
                   <img 
-                    src="https://maxsi.id/web/assets/label-logo-halal-baru-mui-2022.ByeZ8gwf_Z23l3M2.webp" 
+                    src="/halal-logo.svg" 
                     alt="Halal MUI" 
                     className="w-8 h-8 md:w-10 md:h-10 object-contain"
                   />

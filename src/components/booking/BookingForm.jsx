@@ -217,7 +217,7 @@ export default function BookingForm({ selectedDate, selectedTimeSlot, onSubmit, 
         }
 
         widgetId.current = window.grecaptcha.render(recaptchaRef.current, {
-          sitekey: '6LdrxAcsAAAAAMArsD-qH1A2mXL-Dn16OqiRhEri',
+          sitekey: import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LfyATIuAAAAADLSfy9SNnJzHLt0iNFl8vbklQ9F',
           callback: (token) => {
             setRecaptchaToken(token);
             setRecaptchaError(null);

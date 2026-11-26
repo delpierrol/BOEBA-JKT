@@ -637,7 +637,7 @@ export default function SettingsDialog({ open, onOpenChange, onSave, settings })
                 <div className="flex items-start gap-3">
                   <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center p-2">
                     <img 
-                      src="https://maxsi.id/web/assets/label-logo-halal-baru-mui-2022.ByeZ8gwf_Z23l3M2.webp" 
+                      src="/halal-logo.svg" 
                       alt="Halal MUI" 
                       className="w-full h-full object-contain"
                     />
@@ -662,7 +662,7 @@ export default function SettingsDialog({ open, onOpenChange, onSave, settings })
                   <p className="text-sm font-semibold text-gray-900 mb-2">Preview:</p>
                   <div className="flex items-center gap-3">
                     <img 
-                      src="https://maxsi.id/web/assets/label-logo-halal-baru-mui-2022.ByeZ8gwf_Z23l3M2.webp" 
+                      src="/halal-logo.svg" 
                       alt="Halal" 
                       className="w-12 h-12"
                     />
