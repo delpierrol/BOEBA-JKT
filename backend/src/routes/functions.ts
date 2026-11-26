@@ -1,8 +1,14 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { sendWhatsAppMessage } from '../services/whatsapp.js';
+import {
+  getWhatsAppStatus,
+  logoutWhatsAppSession,
+  sendWhatsAppMessage,
+  startWhatsAppSession,
+} from '../services/whatsapp.js';
 import { verifyRecaptchaToken } from '../services/recaptcha.js';
 import { sendEmail } from '../services/email.js';
+import { requireAdmin, requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -101,6 +107,39 @@ router.post('/sendEmail', async (req, res) => {
       success: false,
       error: message,
     });
+  }
+});
+
+router.get('/whatsapp/status', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const status = await getWhatsAppStatus();
+    return res.json(status);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to check WhatsApp status';
+    console.error('[WhatsApp Status] Error:', message);
+    return res.status(500).json({ error: message });
+  }
+});
+
+router.post('/whatsapp/start', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const result = await startWhatsAppSession();
+    return res.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to start WhatsApp session';
+    console.error('[WhatsApp Start] Error:', message);
+    return res.status(500).json({ error: message });
+  }
+});
+
+router.post('/whatsapp/logout', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const result = await logoutWhatsAppSession();
+    return res.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to disconnect WhatsApp session';
+    console.error('[WhatsApp Logout] Error:', message);
+    return res.status(500).json({ error: message });
   }
 });
 

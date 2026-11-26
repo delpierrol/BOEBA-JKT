@@ -7,10 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, X, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import WhatsAppSettingsTab from "./WhatsAppSettingsTab";
 
 export default function SettingsDialog({ open, onOpenChange, onSave, settings }) {
   const DEFAULT_TIME_SESSIONS = ["11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM"];
   
+  const [activeTab, setActiveTab] = useState("capacity");
   const [capacity, setCapacity] = useState(50);
   const [timeSessions, setTimeSessions] = useState(DEFAULT_TIME_SESSIONS);
   const [newSession, setNewSession] = useState("");
@@ -257,13 +259,14 @@ export default function SettingsDialog({ open, onOpenChange, onSave, settings })
           <DialogTitle>Restaurant Settings</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="capacity" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="capacity">Capacity</TabsTrigger>
             <TabsTrigger value="sessions">Time Sessions</TabsTrigger>
             <TabsTrigger value="custom-sessions">Custom Periods</TabsTrigger>
             <TabsTrigger value="rules">Booking Rules</TabsTrigger>
             <TabsTrigger value="certification">Certification</TabsTrigger>
+            <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
           </TabsList>
 
           <TabsContent value="capacity" className="space-y-4 py-4">
@@ -674,6 +677,10 @@ export default function SettingsDialog({ open, onOpenChange, onSave, settings })
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="whatsapp">
+            <WhatsAppSettingsTab active={open && activeTab === "whatsapp"} />
           </TabsContent>
         </Tabs>
 

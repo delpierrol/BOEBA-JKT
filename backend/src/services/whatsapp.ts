@@ -1,4 +1,4 @@
-export async function sendWhatsAppMessage(phoneNumber: string, message: string) {
+function getWppConfig() {
   const apiUrl = process.env.WPPCONNECT_API_URL;
   const sessionName = process.env.WPPCONNECT_SESSION_NAME;
   const secretKey = process.env.WPPCONNECT_SECRET_KEY;
@@ -9,14 +9,17 @@ export async function sendWhatsAppMessage(phoneNumber: string, message: string) 
     );
   }
 
-  let formattedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-  if (!formattedPhone.startsWith('62') && formattedPhone.startsWith('0')) {
-    formattedPhone = '62' + formattedPhone.substring(1);
-  }
+  return {
+    baseUrl: apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl,
+    sessionName,
+    secretKey,
+  };
+}
 
-  const baseUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+async function generateWppToken(): Promise<{ baseUrl: string; sessionName: string; token: string }> {
+  const { baseUrl, sessionName, secretKey } = getWppConfig();
+  const tokenUrl = `${baseUrl}/api/${encodeURIComponent(sessionName)}/${encodeURIComponent(secretKey)}/generate-token`;
 
-  const tokenUrl = `${baseUrl}/api/${sessionName}/${secretKey}/generate-token`;
   const tokenResponse = await fetch(tokenUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -32,12 +35,117 @@ export async function sendWhatsAppMessage(phoneNumber: string, message: string) 
     throw new Error('WPPConnect token not found in response');
   }
 
-  const sendMessageUrl = `${baseUrl}/api/${sessionName}/send-message`;
+  return { baseUrl, sessionName, token: tokenData.token };
+}
+
+function normalizeQrCode(qr?: string | null): string | null {
+  if (!qr || typeof qr !== 'string') return null;
+  if (qr.startsWith('data:image')) return qr;
+  return `data:image/png;base64,${qr}`;
+}
+
+export async function getWhatsAppStatus() {
+  const { baseUrl, sessionName, token } = await generateWppToken();
+  const res = await fetch(`${baseUrl}/api/${encodeURIComponent(sessionName)}/status-session`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const text = await res.text();
+  let data: Record<string, unknown> = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { raw: text };
+  }
+
+  const status = String(data.status || 'DISCONNECTED').toUpperCase();
+  return {
+    session: sessionName,
+    status,
+    connected: status === 'CONNECTED',
+    qrcode: normalizeQrCode(typeof data.qrcode === 'string' ? data.qrcode : null),
+    message: typeof data.message === 'string' ? data.message : undefined,
+  };
+}
+
+export async function startWhatsAppSession() {
+  const { baseUrl, sessionName, token } = await generateWppToken();
+  const res = await fetch(`${baseUrl}/api/${encodeURIComponent(sessionName)}/start-session`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      webhook: '',
+      waitQrCode: true,
+    }),
+  });
+
+  const text = await res.text();
+  let data: Record<string, unknown> = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { raw: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(`WPPConnect start-session error (${res.status}): ${text}`);
+  }
+
+  const status = String(data.status || 'INITIALIZING').toUpperCase();
+  return {
+    session: sessionName,
+    status,
+    connected: status === 'CONNECTED',
+    qrcode: normalizeQrCode(typeof data.qrcode === 'string' ? data.qrcode : null),
+  };
+}
+
+export async function logoutWhatsAppSession() {
+  const { baseUrl, sessionName, token } = await generateWppToken();
+  const res = await fetch(`${baseUrl}/api/${encodeURIComponent(sessionName)}/logout-session`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const text = await res.text();
+  let data: unknown = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { raw: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(`WPPConnect logout-session error (${res.status}): ${text}`);
+  }
+
+  return { success: true, session: sessionName, data };
+}
+
+export async function sendWhatsAppMessage(phoneNumber: string, message: string) {
+  const { baseUrl, sessionName, token } = await generateWppToken();
+
+  let formattedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+  if (!formattedPhone.startsWith('62') && formattedPhone.startsWith('0')) {
+    formattedPhone = '62' + formattedPhone.substring(1);
+  }
+
+  const sendMessageUrl = `${baseUrl}/api/${encodeURIComponent(sessionName)}/send-message`;
   const messageResponse = await fetch(sendMessageUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${tokenData.token}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       phone: formattedPhone,

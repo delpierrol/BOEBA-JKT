@@ -127,6 +127,16 @@ export const base44 = {
         }),
     },
   },
+  whatsapp: {
+    status: () => request('/api/functions/whatsapp/status'),
+    start: () => request('/api/functions/whatsapp/start', { method: 'POST' }),
+    logout: () => request('/api/functions/whatsapp/logout', { method: 'POST' }),
+    sendTest: (phoneNumber, message) =>
+      request('/api/functions/sendWhatsAppMessage', {
+        method: 'POST',
+        body: JSON.stringify({ phoneNumber, message }),
+      }),
+  },
   appLogs: {
     logUserInApp: async () => {},
   },
