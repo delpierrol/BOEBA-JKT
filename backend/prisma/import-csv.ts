@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import bcrypt from 'bcryptjs';
 import { parse } from 'csv-parse/sync';
 import { PrismaClient } from '@prisma/client';
 
@@ -32,6 +33,24 @@ function findFirstExisting(dir: string, candidates: string[]): string | null {
   return null;
 }
 
+function resolveBackupDir(): string {
+  const candidates = [
+    process.argv[2],
+    process.env.CSV_BACKUP_DIR,
+    '/data/backups',
+    path.resolve(process.cwd(), 'backups'),
+    path.resolve(process.cwd(), '../backups'),
+    path.resolve(process.cwd(), '../..'),
+  ].filter(Boolean) as string[];
+
+  for (const dir of candidates) {
+    if (fs.existsSync(dir)) {
+      return dir;
+    }
+  }
+  return path.resolve(process.cwd(), '../backups');
+}
+
 function toDateOrNow(val?: string): Date {
   if (!val) return new Date();
   const d = new Date(val);
@@ -39,8 +58,52 @@ function toDateOrNow(val?: string): Date {
 }
 
 async function main() {
-  const backupDir = process.argv[2] || process.env.CSV_BACKUP_DIR || path.resolve(process.cwd(), '../..');
+  const backupDir = resolveBackupDir();
   console.log(`Importing Base44 CSV backups from: ${backupDir}`);
+
+  // 0. Users
+  const usersFile = findFirstExisting(backupDir, [
+    'Boeba_JKT_-users.csv',
+    'Users_export.csv',
+    'User_export.csv',
+  ]);
+  if (usersFile) {
+    const rows = readCsvIfExists(usersFile);
+    const defaultPassword =
+      process.env.DEFAULT_USER_PASSWORD || process.env.ADMIN_PASSWORD || 'Boeba123!@#';
+    const defaultPasswordHash = await bcrypt.hash(defaultPassword, 10);
+    let count = 0;
+
+    for (const r of rows) {
+      const email = (r.email || '').trim().toLowerCase();
+      if (!email) continue;
+      if (r.status && r.status.toLowerCase() === 'inactive') continue;
+
+      const role = r.role === 'admin' ? 'admin' : 'user';
+      const staffRole = r.staff_role && r.staff_role.trim() ? r.staff_role.trim() : 'none';
+
+      await prisma.user.upsert({
+        where: { email },
+        update: {
+          full_name: r.full_name || null,
+          role,
+          staff_role: staffRole,
+        },
+        create: {
+          email,
+          full_name: r.full_name || null,
+          password_hash: defaultPasswordHash,
+          role,
+          staff_role: staffRole,
+          created_date: toDateOrNow(r.created_date),
+        },
+      });
+      count++;
+    }
+    console.log(
+      `[Users] Imported/updated ${count} users from ${path.basename(usersFile)} (default password for new users uses ADMIN_PASSWORD / DEFAULT_USER_PASSWORD)`
+    );
+  }
 
   // 1. Settings
   const settingsFile = findFirstExisting(backupDir, [
@@ -195,6 +258,7 @@ async function main() {
     'WaitingList_export210226.csv',
     'WaitingList_export_)091225.csv',
     'WaitingList_export_130225.csv',
+    'WaitingList_export.csv',
   ]);
   if (waitlistFile) {
     const existingCount = await prisma.waitingList.count();

@@ -94,9 +94,6 @@ export const requireStaff = (req: AuthRequest, res: Response, next: NextFunction
   if (!req.user) {
     return res.status(401).json({ error: 'Authentication required' });
   }
-  if (req.user.role !== 'admin' && req.user.staff_role !== 'hostess') {
-    return res.status(403).json({ error: 'Staff access required' });
-  }
   return next();
 };
 

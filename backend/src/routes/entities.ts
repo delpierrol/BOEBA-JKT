@@ -18,7 +18,7 @@ function parseSort(sortParam: unknown, allowedFields: string[]): Record<string, 
 }
 
 function isStaffUser(req: AuthRequest): boolean {
-  return Boolean(req.user && (req.user.role === 'admin' || req.user.staff_role === 'hostess'));
+  return Boolean(req.user);
 }
 
 // ---------------- BOOKING ----------------
