@@ -134,29 +134,55 @@ export async function startWhatsAppSession() {
   };
 }
 
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function logoutWhatsAppSession() {
   const { baseUrl, sessionName, token } = await generateWppToken();
-  const res = await fetch(`${baseUrl}/api/${encodeURIComponent(sessionName)}/logout-session`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
 
-  const text = await res.text();
-  let data: unknown = {};
+  let logoutData: unknown = null;
   try {
-    data = text ? JSON.parse(text) : {};
+    const res = await fetchWithTimeout(
+      `${baseUrl}/api/${encodeURIComponent(sessionName)}/logout-session`,
+      { method: 'POST', headers },
+      10000
+    );
+    const text = await res.text();
+    try {
+      logoutData = text ? JSON.parse(text) : {};
+    } catch {
+      logoutData = { raw: text };
+    }
+  } catch (err) {
+    console.warn(
+      '[WhatsApp Logout] logout-session timed out or failed, falling back to close-session:',
+      err instanceof Error ? err.message : err
+    );
+  }
+
+  // Always ensure the Puppeteer session is closed so it doesn't hang
+  try {
+    await fetchWithTimeout(
+      `${baseUrl}/api/${encodeURIComponent(sessionName)}/close-session`,
+      { method: 'POST', headers },
+      5000
+    );
   } catch {
-    data = { raw: text };
+    // Ignore close-session errors if already closed
   }
 
-  if (!res.ok) {
-    throw new Error(`WPPConnect logout-session error (${res.status}): ${text}`);
-  }
-
-  return { success: true, session: sessionName, data };
+  return { success: true, session: sessionName, data: logoutData };
 }
 
 export async function sendWhatsAppMessage(phoneNumber: string, message: string) {
