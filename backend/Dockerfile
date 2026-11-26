@@ -20,7 +20,7 @@ ENV NODE_ENV=production
 RUN apk add --no-cache openssl
 
 COPY package.json package-lock.json* ./
-RUN npm install --omit=dev && npm install tsx
+RUN npm install --omit=dev
 
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/dist ./dist
