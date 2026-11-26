@@ -52,16 +52,24 @@ export default function WhatsAppSettingsTab({ active }) {
     }
   }, [active, fetchStatus]);
 
+  const shouldPoll = Boolean(
+    active &&
+      statusData &&
+      !statusData.connected &&
+      (statusData.qrcode ||
+        ['QRCODE', 'INITIALIZING', 'NOTLOGGED', 'UNPAIRED', 'OPENING', 'PAIRING'].includes(
+          statusData.status
+        ))
+  );
+
   // Auto-poll every 2 seconds while waiting for QR scan or initializing (rotates QR automatically like WA Web)
   useEffect(() => {
-    if (!active || !statusData) return;
-    if (statusData.status === 'QRCODE' || statusData.status === 'INITIALIZING') {
-      const timer = setInterval(() => {
-        fetchStatus(true);
-      }, 2000);
-      return () => clearInterval(timer);
-    }
-  }, [active, statusData, fetchStatus]);
+    if (!shouldPoll) return;
+    const timer = setInterval(() => {
+      fetchStatus(true);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [shouldPoll, fetchStatus]);
 
   const handleStartSession = async () => {
     setIsStarting(true);
