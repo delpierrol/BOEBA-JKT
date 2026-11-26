@@ -20,5 +20,5 @@ npm-debug.log*
 Thumbs.db
 
 # Backup CSVs (avoid committing customer PII to GitHub)
-# backups/*.csv
-# *.csv
+backups/*.csv
+*.csv
