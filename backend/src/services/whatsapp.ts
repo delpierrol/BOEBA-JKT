@@ -63,11 +63,35 @@ export async function getWhatsAppStatus() {
   }
 
   const status = String(data.status || 'DISCONNECTED').toUpperCase();
+  let qrcode = status === 'QRCODE' ? normalizeQrCode(typeof data.qrcode === 'string' ? data.qrcode : null) : null;
+
+  // Fetch fresh QR image if status is QRCODE and status-session didn't include it
+  if (status === 'QRCODE' && !qrcode) {
+    try {
+      const qrRes = await fetch(`${baseUrl}/api/${encodeURIComponent(sessionName)}/qrcode-session`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (qrRes.ok) {
+        const contentType = qrRes.headers.get('content-type') || '';
+        if (contentType.includes('image/')) {
+          const buf = Buffer.from(await qrRes.arrayBuffer());
+          qrcode = `data:${contentType};base64,${buf.toString('base64')}`;
+        } else {
+          const qrJson = (await qrRes.json()) as { qrcode?: string };
+          qrcode = normalizeQrCode(qrJson.qrcode);
+        }
+      }
+    } catch {
+      // Ignore fallback QR fetch error
+    }
+  }
+
   return {
     session: sessionName,
     status,
     connected: status === 'CONNECTED',
-    qrcode: normalizeQrCode(typeof data.qrcode === 'string' ? data.qrcode : null),
+    qrcode,
     message: typeof data.message === 'string' ? data.message : undefined,
   };
 }

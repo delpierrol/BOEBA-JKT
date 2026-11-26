@@ -18,6 +18,7 @@ import {
 
 export default function WhatsAppSettingsTab({ active }) {
   const [statusData, setStatusData] = useState(null);
+  const [lastQrUpdated, setLastQrUpdated] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -32,7 +33,12 @@ export default function WhatsAppSettingsTab({ active }) {
     setError('');
     try {
       const data = await base44.whatsapp.status();
-      setStatusData(data);
+      setStatusData((prev) => {
+        if (data?.qrcode && data.qrcode !== prev?.qrcode) {
+          setLastQrUpdated(new Date().toLocaleTimeString());
+        }
+        return data;
+      });
     } catch (err) {
       setError(err.message || 'Gagal mengambil status WPPConnect');
     } finally {
@@ -46,13 +52,13 @@ export default function WhatsAppSettingsTab({ active }) {
     }
   }, [active, fetchStatus]);
 
-  // Auto-poll every 3 seconds while waiting for QR scan or initializing
+  // Auto-poll every 2 seconds while waiting for QR scan or initializing (rotates QR automatically like WA Web)
   useEffect(() => {
     if (!active || !statusData) return;
     if (statusData.status === 'QRCODE' || statusData.status === 'INITIALIZING') {
       const timer = setInterval(() => {
         fetchStatus(true);
-      }, 3000);
+      }, 2000);
       return () => clearInterval(timer);
     }
   }, [active, statusData, fetchStatus]);
@@ -63,6 +69,9 @@ export default function WhatsAppSettingsTab({ active }) {
     try {
       const data = await base44.whatsapp.start();
       setStatusData(data);
+      if (data?.qrcode) {
+        setLastQrUpdated(new Date().toLocaleTimeString());
+      }
     } catch (err) {
       setError(err.message || 'Gagal memulai sesi WhatsApp');
     } finally {
@@ -167,8 +176,18 @@ export default function WhatsAppSettingsTab({ active }) {
               </div>
               <p className="text-xs text-gray-500 flex items-center justify-center gap-2">
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" />
-                Menunggu scan... status otomatis diperbarui setiap 3 detik
+                QR otomatis diperbarui tiap 2 detik{lastQrUpdated ? ` (update terakhir: ${lastQrUpdated})` : ''}
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleStartSession}
+                disabled={isStarting}
+              >
+                <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isStarting ? 'animate-spin' : ''}`} />
+                Generate Ulang QR Code
+              </Button>
             </>
           ) : (
             <div className="space-y-3 py-2">
