@@ -121,6 +121,8 @@ export default function WhatsAppSettingsTab({ active }) {
 
   const isConnected = statusData?.connected;
   const statusText = statusData?.status || 'UNKNOWN';
+  const isQrReady = statusText === 'QRCODE' && Boolean(statusData?.qrcode);
+  const isInitializing = ['INITIALIZING', 'OPENING', 'PAIRING'].includes(statusText);
 
   return (
     <div className="space-y-4 py-4">
@@ -170,7 +172,7 @@ export default function WhatsAppSettingsTab({ active }) {
 
       {!isConnected && (
         <div className="p-5 border rounded-lg bg-white text-center space-y-4">
-          {statusData?.qrcode ? (
+          {isQrReady ? (
             <>
               <p className="text-sm font-medium text-gray-800">
                 Scan QR Code ini dari aplikasi WhatsApp (Perangkat Tertaut / Linked Devices)
@@ -197,10 +199,20 @@ export default function WhatsAppSettingsTab({ active }) {
                 Generate Ulang QR Code
               </Button>
             </>
+          ) : isInitializing ? (
+            <div className="space-y-3 py-6">
+              <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto" />
+              <p className="text-sm font-medium text-gray-700">
+                Menyiapkan sesi WhatsApp ({statusText})...
+              </p>
+              <p className="text-xs text-gray-500">
+                QR Code akan muncul otomatis begitu status sudah siap (QRCODE).
+              </p>
+            </div>
           ) : (
             <div className="space-y-3 py-2">
               <p className="text-sm text-gray-600">
-                Sesi WhatsApp saat ini tidak aktif. Klik tombol di bawah untuk memulai sesi dan menampilkan QR Code.
+                Sesi WhatsApp saat ini tidak aktif ({statusText}). Klik tombol di bawah untuk memulai sesi dan menampilkan QR Code.
               </p>
               <Button
                 type="button"
@@ -211,7 +223,7 @@ export default function WhatsAppSettingsTab({ active }) {
                 {isStarting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating QR Code...
+                    Starting Session...
                   </>
                 ) : (
                   <>

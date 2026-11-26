@@ -63,14 +63,13 @@ export async function getWhatsAppStatus() {
   }
 
   const status = String(data.status || 'DISCONNECTED').toUpperCase();
-  const isClosed = status === 'CLOSED' || status === 'DISCONNECTED';
   let qrcode =
-    status !== 'CONNECTED' && !isClosed
+    status === 'QRCODE'
       ? normalizeQrCode(typeof data.qrcode === 'string' ? data.qrcode : null)
       : null;
 
-  // Fetch fresh QR image if session is waiting for QR and status-session didn't include it
-  if (status !== 'CONNECTED' && !isClosed && !qrcode) {
+  // Fetch fresh QR image only when status is QRCODE and status-session didn't include it
+  if (status === 'QRCODE' && !qrcode) {
     try {
       const qrRes = await fetch(`${baseUrl}/api/${encodeURIComponent(sessionName)}/qrcode-session`, {
         method: 'GET',
@@ -131,7 +130,7 @@ export async function startWhatsAppSession() {
     session: sessionName,
     status,
     connected: status === 'CONNECTED',
-    qrcode: normalizeQrCode(typeof data.qrcode === 'string' ? data.qrcode : null),
+    qrcode: status === 'QRCODE' ? normalizeQrCode(typeof data.qrcode === 'string' ? data.qrcode : null) : null,
   };
 }
 
