@@ -57,6 +57,7 @@ import ModifyBooking from './pages/ModifyBooking';
 import OrderList from './pages/OrderList';
 import QRScanner from './pages/QRScanner';
 import Reschedule from './pages/Reschedule';
+import UserManagement from './pages/UserManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -71,6 +72,7 @@ export const PAGES = {
     "OrderList": OrderList,
     "QRScanner": QRScanner,
     "Reschedule": Reschedule,
+    "UserManagement": UserManagement,
 }
 
 export const pagesConfig = {

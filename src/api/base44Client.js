@@ -137,6 +137,23 @@ export const base44 = {
         body: JSON.stringify({ phoneNumber, message }),
       }),
   },
+  users: {
+    list: () => request('/api/auth/users'),
+    create: (data) =>
+      request('/api/auth/users', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (id, data) =>
+      request(`/api/auth/users/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+    delete: (id) =>
+      request(`/api/auth/users/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      }),
+  },
   appLogs: {
     logUserInApp: async () => {},
   },

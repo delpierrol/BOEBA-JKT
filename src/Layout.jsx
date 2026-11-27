@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Calendar, ClipboardCheck, List, QrCode, LayoutDashboard, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, ClipboardCheck, List, QrCode, LayoutDashboard, Menu, X, ChevronLeft, ChevronRight, LogOut, Users } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 
@@ -29,17 +29,25 @@ export default function Layout({ children, currentPageName }) {
   const isAdmin = user?.role === 'admin';
 
       // Backend pages that should show sidebar - use URL path instead of prop
-      const backendPages = ['dashboard', 'checkin', 'qrscanner'];
+      const backendPages = ['dashboard', 'checkin', 'qrscanner', 'usermanagement'];
       const currentPath = location.pathname.split('/').filter(Boolean)[0] || '';
       const isBackendPage = backendPages.includes(currentPath.toLowerCase());
 
       const navItems = [
-        ...(isAdmin ? [{ 
-          path: "Dashboard", 
-          icon: LayoutDashboard, 
-          label: "Dashboard",
-          adminOnly: true 
-        }] : []),
+        ...(isAdmin ? [
+          { 
+            path: "Dashboard", 
+            icon: LayoutDashboard, 
+            label: "Dashboard",
+            adminOnly: true 
+          },
+          {
+            path: "UserManagement",
+            icon: Users,
+            label: "Master Users",
+            adminOnly: true
+          }
+        ] : []),
         { 
           path: "CheckIn", 
           icon: ClipboardCheck, 
@@ -119,8 +127,20 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </nav>
 
-        {/* Collapse Button */}
-        <div className="p-4 border-t border-teal-200/50">
+        {/* Footer: Logout & Collapse */}
+        <div className="p-4 border-t border-teal-200/50 space-y-2">
+          {user && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => base44.auth.logout('/login')}
+              className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+              title={sidebarCollapsed ? 'Logout' : ''}
+            >
+              <LogOut className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span className="text-xs font-medium">Logout</span>}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
